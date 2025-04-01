@@ -52,10 +52,10 @@ def generate():
         '''configure the response type (I have used array of ranks corresponding to qa_pairs)'''
         generate_content_config = types.GenerateContentConfig(
             response_mime_type="application/json",
-            response_schema=genai.types.Schema(
-                type = genai.types.Type.ARRAY,
-                items = genai.types.Schema(
-                        type = genai.types.Type.NUMBER,
+            response_schema=types.Schema(
+                type = types.Type.ARRAY,
+                items = types.Schema(
+                        type = types.Type.NUMBER,
                 ),
 
             ),
