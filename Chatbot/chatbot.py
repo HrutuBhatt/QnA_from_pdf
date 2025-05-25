@@ -1,108 +1,96 @@
-import pandas as pd
-df = pd.read_csv('911_end-to-end_data.csv')
-df.head()
-
-df.describe()
-
-df = df.fillna("N/A")
-
-def row_to_text(row):
-    return (
-        f"On {row['date']}, the {row['agency']} responded to a {row['final_incident_type']} incident. "
-        f"The call to first pickup time was {row['call_to_first_pickup']} seconds, "
-        f"and the dispatch occurred after {row['call_to_agency_dispatch']} seconds. "
-        f"The median dispatch time was {row['median_dispatch']} seconds, "
-        f"and the average travel time was {row['average_travel']} seconds."
-    )
-
-# df["texts"] = df.apply(row_to_text, axis=1)
-
-from sentence_transformers import SentenceTransformer
-
-model = SentenceTransformer("all-MiniLM-L6-v2")
-# df["vector"] = df["texts"].apply(lambda x: model.encode(x).tolist())
-
-# !pip install lancedb
-
-# import lancedb
-# db = lancedb.connect("chatbot_db")
-
-df.head()
-API_KEY = ""
-# table = db.create_table("responses", data=df[["texts","vector"]].to_dict(orient="records"))
-
-# query = "What was the average response time for NYPD?"
-# query_vec = model.encode(query).tolist()
-# results = table.search(query_vec).limit(3).to_df()
-# for r in results["texts"]:
-#     print(r)
-
-
+import os, json, time
 from pathlib import Path
 from agno.agent import agent
-from agno.knowledge.csv import CSVKnowledgeBase
+from agno.knowledge.json import JSONKnowledgeBase
 from agno.vectordb.lancedb import LanceDb, SearchType
 from agno.models.google import Gemini
+from agno.embedder.google import GeminiEmbedder
+from agno.embedder.openai import OpenAIEmbedder
 
-# df.drop(columns=["texts"], inplace=True)
+API_KEY = ""
+JSON_FOLDER = "./json_data"
+LANCE_DB_URI = "./content/lancedb"
+TABLE_NAME = "json_documents"
 
-class AgnoSentenceTransformerEmbedder:
-    def __init__(self, model_name: str):
-        self.model = SentenceTransformer(model_name)
-        self.dimensions = self.model.get_sentence_embedding_dimension() # Get dimensions using the correct method
-
-    def get_embedding(self, texts):
-        return self.model.encode(texts).tolist()
-
-    def get_embedding_and_usage(self, texts):
-        embeddings = self.get_embedding(texts)
-        usage = {
-            "input_tokens": sum(len(text.split()) for text in texts), 
-            "embedding_tokens": 0  
-        }
-        return embeddings, usage
-
-sentence_transformer_embedder = AgnoSentenceTransformerEmbedder("all-MiniLM-L6-v2")
-
-
-
-documents = [row_to_text(row) for _, row in df.iterrows()]
-
-knowlege_base = CSVKnowledgeBase(
-    path=Path('.'),
-    documents=documents,
-    vector_db=LanceDb(
-        uri="/content/lancedb",
-        table_name="911_data",
-        search_type=SearchType.vector,
-        embedder=sentence_transformer_embedder,
-    ),
-
+embedder = OpenAIEmbedder(api_key=API_KEY)
+vector_db = LanceDb(
+    uri=LANCE_DB_URI,
+    table_name=TABLE_NAME,
+    search_type=SearchType.vector,
+    embedder=embedder
 )
 
-knowlege_base.load(recreate = False)
+# # process rows in batches
 
+def load_json_documents_in_batches(json_folder, batch_size=10, delay_between_batches=20):
+    all_docs = []
+
+    #extracting files from mentioned folder
+    for filename in os.listdir(json_folder):
+        if filename.endswith(".json"):
+            with open(os.path.join(json_folder, filename), "r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        all_docs.extend(data)
+                    elif isinstance(data, dict):
+                        all_docs.append(data)
+                except Exception as e:
+                    print(f"Failed to load {filename}: {e}")
+
+    def batch(iterable, n=1):
+        for i in range(0, len(iterable), n):
+            yield iterable[i:i + n]
+
+
+    #passing rows in batches
+    print(f"Total documents to insert: {len(all_docs)}")
+    for idx, batch_docs in enumerate(batch(all_docs, batch_size)):
+        try:
+            texts = [json.dumps(doc) for doc in batch_docs] 
+            embeddings = embedder.get_embedding(texts)
+            vector_db.upsert(batch_docs,embeddings)
+            print(f" Batch {idx + 1} inserted with {len(batch_docs)} documents")
+        except Exception as e:
+            print(f"Error in batch {idx + 1}: {e}")
+        time.sleep(delay_between_batches)  
+
+
+load_json_documents_in_batches(JSON_FOLDER, batch_size=10)
+
+
+#knowledge base for agent
+knowledge_base = JSONKnowledgeBase(
+    path=Path("json_data"),
+    vector_db= vector_db
+)
+knowledge_base.load(recreate = False)
+
+
+# model 
 from agno.agent import Agent
 agent = Agent(
-    model = Gemini(id = "gemini-2.5-flash-preview-04-17", api_key = API_KEY),
-    knowledge = knowlege_base,
+    model = Gemini(id = "gemini-2.5-flash-preview-05-20", api_key = API_KEY),
+    knowledge = knowledge_base,
     search_knowledge=True,
     show_tool_calls=True,
     markdown=True,
 )
 
+
+# CLI for chat
 def run_cli_chat(agent):
     print("🔹 Welcome to the CSV Chatbot! (type 'exit' to quit)\n")
     while True:
         query = input("🧑‍💻 You: ")
         if query.lower() in {"exit", "quit"}:
-            print("👋 Goodbye!")
+            print("Goodbye!")
             break
         try:
             # response = agent.get_response(query)
-            print(f"🤖 Bot: {agent.print_response(query)}\n")
+            print(f"Bot: {agent.print_response(query)}\n")
         except Exception as e:
-            print(f"⚠️ Error: {e}\n")
+            print(f"Error: {e}\n")
 
 if __name__ == "__main__":
     run_cli_chat(agent)
