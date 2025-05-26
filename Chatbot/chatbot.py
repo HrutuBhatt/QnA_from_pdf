@@ -80,7 +80,7 @@ agent = Agent(
 
 # CLI for chat
 def run_cli_chat(agent):
-    print("🔹 Welcome to the CSV Chatbot! (type 'exit' to quit)\n")
+    print(" Welcome to the Chatbot! (type 'exit' to quit)\n")
     while True:
         query = input("🧑‍💻 You: ")
         if query.lower() in {"exit", "quit"}:
