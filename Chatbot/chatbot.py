@@ -9,7 +9,7 @@ from agno.embedder.google import GeminiEmbedder
 from agno.embedder.openai import OpenAIEmbedder
 from agno.media import File
 
-API_KEY = "AIzaSyAURdaoE9JaxaOw4bcm9ipv6moPIS_Umvo"
+API_KEY = ""
 JSON_FOLDER = Path("./json_data")
 
 
