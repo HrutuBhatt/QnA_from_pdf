@@ -9,37 +9,39 @@ from agno.embedder.google import GeminiEmbedder
 from agno.embedder.openai import OpenAIEmbedder
 from agno.media import File
 
-API_KEY = ""
+API_KEY = "AIzaSyDg6u-euPuvPvNtJ9lQKxEJWNuI85OuRYo"
 JSON_FOLDER = Path("./json_data")
 
 
-FILE_KEYWORDS = {
-    "file1.txt": ["nypd", "fdny", "incident type", "dispatch", "arrival", "security", "medical emergencies", "agency", "call", "final_incident_type", "pickup", "dispatch" ,"incidents", "average dispatch", "handoff", "travel", "ems"],
-    "file2.txt": ["ems", "nypd", "agency","description","borough", "incidents" ,"value", "response", "medical", "response time"],
-    "file3.txt": ["stalking", "arrests", "dv", "domestic violence", "arrest", "year"],
-    "file4.txt": ["county", "crime", "type", "anti", "gender", "age", "american", "indian", "alaskan", "white", "black", "protestant", "jewish", "agnoticism", "religious", "buddhist", "greek", "russian", "hispanic", "arab", "disability", "victims", "incidents"],
-    "file5.txt": ["county", "agency", "months", "reported", "crime", "index", "violent", "murder", "robbery", "assault", "burglary", "vehicle", "theft", "region", "property", "year"],
-    "file6.txt": ["county", "felony", "drug", "dwi", "misdemeanor", "property", "total"]
-}
+# FILE_KEYWORDS = {
+#     "file1.txt": ["nypd", "fdny", "incident type", "dispatch", "arrival", "security", "medical emergencies", "agency", "call", "final_incident_type", "pickup", "dispatch" ,"incidents", "average dispatch", "handoff", "travel", "ems"],
+#     "file2.txt": ["ems", "nypd", "agency","description","borough", "incidents" ,"value", "response", "medical", "response time"],
+#     "file3.txt": ["stalking", "arrests", "dv", "domestic violence", "arrest", "year"],
+#     "file4.txt": ["county", "crime", "type", "anti", "gender", "age", "american", "indian", "alaskan", "white", "black", "protestant", "jewish", "agnoticism", "religious", "buddhist", "greek", "russian", "hispanic", "arab", "disability", "victims", "incidents"],
+#     "file5.txt": ["county", "agency", "months", "reported", "crime", "index", "violent", "murder", "robbery", "assault", "burglary", "vehicle", "theft", "region", "property", "year"],
+#     "file6.txt": ["county", "felony", "drug", "dwi", "misdemeanor", "property", "total"]
+# }
 
-import re
-from collections import defaultdict
+# import re
+# from collections import defaultdict
 
-def get_matching_file(user_query: str) -> str:
-    query = user_query.lower()
-    scores = defaultdict(int)
-    for file, keywords in FILE_KEYWORDS.items():
-        for kw in keywords:
-            if re.search(rf"\b{re.escape(kw.lower())}\b", query):
-                scores[file] += 1
-    # Return the file with the highest score
-    if scores:
-        best_match = max(scores.items(), key=lambda x: x[1])[0]
-        return best_match
-    else:
-        return None
+# # from keywords , finds the relevant file
+# def get_matching_file(user_query: str) -> str:
+#     query = user_query.lower()
+#     scores = defaultdict(int)
+#     for file, keywords in FILE_KEYWORDS.items():
+#         for kw in keywords:
+#             if re.search(rf"\b{re.escape(kw.lower())}\b", query):
+#                 scores[file] += 1
+#     # Return the file with the highest score
+#     if scores:
+#         best_match = max(scores.items(), key=lambda x: x[1])[0]
+#         return best_match
+#     else:
+#         return None
 
 
+# agno agent
 def build_agent_for_file() -> Agent:
 
     return Agent(
@@ -57,39 +59,36 @@ def build_agent_for_file() -> Agent:
 
 
 agent = build_agent_for_file()
+
 # CLI for chat
-<<<<<<< HEAD
 def run_cli_chat():
     print("Welcome to the Chatbot! (type 'exit' to quit)\n")
-=======
-def run_cli_chat(agent):
-    print(" Welcome to the Chatbot! (type 'exit' to quit)\n")
->>>>>>> 48d7b920e3694ae8eee1ad72bacba67eaff5a922
     while True:
         query = input("You: ")
         if query.lower() in {"exit", "quit"}:
             print("Goodbye!")
             break
 
-        file_name = get_matching_file(query)
-        print(file_name )
+        # file_name = get_matching_file(query)
+        # print(file_name )
 
-        json_path = Path(f"./json_data/{file_name}")
+        # json_path = Path(f"./json_data/{file_name}")
 
     
 
         try:
             print(f"Bot: {agent.print_response(
                 query,
-                files=[File(filepath=json_path)],
+                files=[File(filepath=Path(f"./json_data/file1.txt")),
+                File(filepath=Path(f"./json_data/file2.txt")),
+                File(filepath=Path(f"./json_data/file3.txt")),
+                File(filepath=Path(f"./json_data/file4.txt")),
+                File(filepath=Path(f"./json_data/file5.txt")),
+                File(filepath=Path(f"./json_data/file6.txt"))],
             )}\n")
         except Exception as e:
             print(f"Error: {e}\n")
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     run_cli_chat()
-=======
-    run_cli_chat(agent)
->>>>>>> 48d7b920e3694ae8eee1ad72bacba67eaff5a922
