@@ -58,8 +58,13 @@ def build_agent_for_file() -> Agent:
 
 agent = build_agent_for_file()
 # CLI for chat
+<<<<<<< HEAD
 def run_cli_chat():
     print("Welcome to the Chatbot! (type 'exit' to quit)\n")
+=======
+def run_cli_chat(agent):
+    print(" Welcome to the Chatbot! (type 'exit' to quit)\n")
+>>>>>>> 48d7b920e3694ae8eee1ad72bacba67eaff5a922
     while True:
         query = input("You: ")
         if query.lower() in {"exit", "quit"}:
@@ -83,4 +88,8 @@ def run_cli_chat():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     run_cli_chat()
+=======
+    run_cli_chat(agent)
+>>>>>>> 48d7b920e3694ae8eee1ad72bacba67eaff5a922
