@@ -13,34 +13,6 @@ API_KEY = ""
 JSON_FOLDER = Path("./json_data")
 
 
-# FILE_KEYWORDS = {
-#     "file1.txt": ["nypd", "fdny", "incident type", "dispatch", "arrival", "security", "medical emergencies", "agency", "call", "final_incident_type", "pickup", "dispatch" ,"incidents", "average dispatch", "handoff", "travel", "ems"],
-#     "file2.txt": ["ems", "nypd", "agency","description","borough", "incidents" ,"value", "response", "medical", "response time"],
-#     "file3.txt": ["stalking", "arrests", "dv", "domestic violence", "arrest", "year"],
-#     "file4.txt": ["county", "crime", "type", "anti", "gender", "age", "american", "indian", "alaskan", "white", "black", "protestant", "jewish", "agnoticism", "religious", "buddhist", "greek", "russian", "hispanic", "arab", "disability", "victims", "incidents"],
-#     "file5.txt": ["county", "agency", "months", "reported", "crime", "index", "violent", "murder", "robbery", "assault", "burglary", "vehicle", "theft", "region", "property", "year"],
-#     "file6.txt": ["county", "felony", "drug", "dwi", "misdemeanor", "property", "total"]
-# }
-
-# import re
-# from collections import defaultdict
-
-# # from keywords , finds the relevant file
-# def get_matching_file(user_query: str) -> str:
-#     query = user_query.lower()
-#     scores = defaultdict(int)
-#     for file, keywords in FILE_KEYWORDS.items():
-#         for kw in keywords:
-#             if re.search(rf"\b{re.escape(kw.lower())}\b", query):
-#                 scores[file] += 1
-#     # Return the file with the highest score
-#     if scores:
-#         best_match = max(scores.items(), key=lambda x: x[1])[0]
-#         return best_match
-#     else:
-#         return None
-
-
 # agno agent
 def build_agent_for_file() -> Agent:
 
